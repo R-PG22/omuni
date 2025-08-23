@@ -35,13 +35,20 @@ int main(){
                 }       
             }
         }
-        float rad = atan2(Y, X);
-        int speed = hypot(X, Y);
+        float rad = 90.0 - (atan2(Y, X) * 180.0f / M_PI);
+        if (rad < 0){
+            rad += 360.0;
+        }
+        float speed = hypot(X, Y);
         pwm[0] = sin((rad - 45) * M_PI / 180.0f) * speed;
         pwm[1] = sin((rad - 135) * M_PI / 180.0f) * speed;
         pwm[2] = sin((rad - 225) * M_PI / 180.0f) * speed;
         pwm[3] = sin((rad - 315) * M_PI / 180.0f) * speed;
         CANMessage msg(2, (const uint8_t *)pwm, 8); //特に理由がない限りwhile直下
         can.write(msg); //特に理由がない限りwhile直下
+        // printf("%d %d\n", pwm[3],pwm[0]);
+        // printf("%d %d\n", pwm[2],pwm[1]);
+        // printf("\n");
+        // ThisThread::sleep_for(chrono::milliseconds(100));
     }
 }
