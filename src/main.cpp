@@ -4,6 +4,7 @@ BufferedSerial esp(PA_9, PA_10, 115200);
 int16_t pwm[4] = {0, 0, 0, 0};
 int X;
 int Y;
+uint8_t power = 150; // モーターの最高出力(22500)÷150
 
 int main(){
     CAN can(PA_11, PA_12, (int)1e6); // canを出力するピンを指定
@@ -40,10 +41,10 @@ int main(){
             rad += 360.0;
         }
         float speed = hypot(X, Y);
-        pwm[0] = sin((rad - 45) * M_PI / 180.0f) * speed;
-        pwm[1] = sin((rad - 135) * M_PI / 180.0f) * speed;
-        pwm[2] = sin((rad - 225) * M_PI / 180.0f) * speed;
-        pwm[3] = sin((rad - 315) * M_PI / 180.0f) * speed;
+        pwm[0] = sin((rad - 45) * M_PI / 180.0f) * speed * power;
+        pwm[1] = sin((rad - 135) * M_PI / 180.0f) * speed * power;
+        pwm[2] = sin((rad - 225) * M_PI / 180.0f) * speed * power;
+        pwm[3] = sin((rad - 315) * M_PI / 180.0f) * speed * power;
         CANMessage msg(2, (const uint8_t *)pwm, 8); //特に理由がない限りwhile直下
         can.write(msg); //特に理由がない限りwhile直下
         // printf("%d %d\n", pwm[3],pwm[0]);
