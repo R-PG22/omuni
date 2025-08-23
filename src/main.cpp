@@ -1,8 +1,9 @@
 #include "mbed.h"
 BufferedSerial pc(USBTX, USBRX, 115200);
+BufferedSerial esp(PA_9, PA_10, 115200);
 int16_t pwm[4] = {0, 0, 0, 0};
-float X;
-float Y;
+int X;
+int Y;
 
 int main(){
     CAN can(PA_11, PA_12, (int)1e6); // canを出力するピンを指定
@@ -11,9 +12,9 @@ int main(){
     int buf_index = 0;
 
     while(1){
-        if(pc.readable()){
+        if(esp.readable()){
             char c;
-            int len = pc.read(&c, 1);
+            int len = esp.read(&c, 1);
             if (len > 0){
                 if (c == ','){
                     if(buf_index > 0){
@@ -21,7 +22,7 @@ int main(){
                         X = atoi(buf);
                         buf_index = 0;
                     }
-                }else if (c == 'n'){
+                }else if (c == '\n'){
                     if(buf_index > 0){
                         buf[buf_index] = '\0';
                         Y = atoi(buf);
