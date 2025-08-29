@@ -9,5 +9,6 @@ void setup() {
 void loop() {
   if (PS4.isConnected()) {
     Serial.print(String(PS4.LStickX()) + "," + String(PS4.LStickY()) + "\n");
+    delay(100);
   }
 }
