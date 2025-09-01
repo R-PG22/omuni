@@ -29,11 +29,23 @@ int main(){
                         Y = atoi(buf);
                         buf_index = 0;
                     }
+                }else if (c == 'r'){
+                    if(buf_index > 0){
+                        buf[buf_index] = '\0';
+                        // 右に回るプログラム
+                        buf_index = 0;
+                    }
+                }else if (c == 'l'){
+                    if(buf_index > 0){
+                        buf[buf_index] = '\0';
+                        // 左に回るプログラム
+                        buf_index = 0;
+                    }
                 }else{
                     if (buf_index < sizeof(buf) - 1){
                         buf[buf_index++] = c;
                     }
-                }       
+                }
             }
         }
         float rad = 90.0 - (atan2(Y, X) * 180.0f / M_PI);
@@ -47,9 +59,8 @@ int main(){
         pwm[3] = sin((rad - 315) * M_PI / 180.0f) * speed * power;
         CANMessage msg(2, (const uint8_t *)pwm, 8); //特に理由がない限りwhile直下
         can.write(msg); //特に理由がない限りwhile直下
-        // prin
         
-        tf("%d %d\n", pwm[3],pwm[0]);
+        // printf("%d %d\n", pwm[3],pwm[0]);
         // printf("%d %d\n", pwm[2],pwm[1]);
         // printf("\n");
         // ThisThread::sleep_for(chrono::milliseconds(100));
