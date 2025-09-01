@@ -4,6 +4,7 @@ BufferedSerial esp(PA_9, PA_10, 115200);
 int16_t pwm[4] = {0, 0, 0, 0};
 int X;
 int Y;
+int turn[4] = {20000, 0, 20000, 0};
 uint8_t power = 150; // モーターの最高出力(22500)÷150
 
 int main(){
@@ -32,14 +33,20 @@ int main(){
                 }else if (c == 'r'){
                     if(buf_index > 0){
                         buf[buf_index] = '\0';
-                        // 右に回るプログラム
+                        for (int i = 0; i < 4; i++){
+                            pwm[i] = turn[i];
+                        }
                         buf_index = 0;
+                        continue;
                     }
                 }else if (c == 'l'){
                     if(buf_index > 0){
                         buf[buf_index] = '\0';
-                        // 左に回るプログラム
+                        for (int i = 3; i < 1; i--){
+                            pwm[i] = turn[i] * -1;
+                        }
                         buf_index = 0;
+                        continue;
                     }
                 }else{
                     if (buf_index < sizeof(buf) - 1){
@@ -47,6 +54,10 @@ int main(){
                     }
                 }
             }
+        }
+        if (abs(X) > 10 && abs(Y) > 10){
+            X = 0;
+            Y = 0;
         }
         float rad = 90.0 - (atan2(Y, X) * 180.0f / M_PI);
         if (rad < 0){
