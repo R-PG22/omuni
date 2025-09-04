@@ -59,7 +59,7 @@ int main(){
             X = 0;
             Y = 0;
         }
-        float rad = 90.0 - (atan2(Y, X) * 180.0f / M_PI);
+        float rad = 90.0f - (atan2(Y, X) * 180.0f / M_PI);
         if (rad < 0){
             rad += 360.0;
         }
