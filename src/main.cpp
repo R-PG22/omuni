@@ -7,7 +7,7 @@ int rx_Y = 0;
 int rx_Turn = 0;
 int read_num;
 const int Max_Motor_Power = 22500;
-uint8_t Motor_adj;
+uint8_t Motor_adj; // 出力の補正値
 int R_adj; // 旋回の補正値
 
 int main(){
@@ -58,7 +58,7 @@ int main(){
 
         // pwmにそれぞれ格納
         for (int i : pwm){
-            pwm[i] = (int)((sin((rad - (45 + i * 90)) * M_PI / 180.0f) * speed * Motor_adj) + rx_Turn) % (Max_Motor_Power + 1);
+            pwm[i] = max((int)((sin((rad - (45 + i * 90)) * M_PI / 180.0f) * speed * Motor_adj) + rx_Turn), Max_Motor_Power);
         }
 
         CANMessage msg(2, (const uint8_t *)pwm, 8); //特に理由がない限りwhile直下
@@ -66,10 +66,7 @@ int main(){
         
         printf("%d %d\n", pwm[3],pwm[0]);
         printf("%d %d\n", pwm[2],pwm[1]);
-        // printf("%d\n",rx_X);
-        // printf("%d, %d\n",rx_X,rx_Y);
         printf("\n");
-        // ThisThread::sleep_for(chrono::milliseconds(10));
     }
     return 0;
 }
