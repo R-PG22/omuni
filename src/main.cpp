@@ -6,8 +6,8 @@ int rx_X = 0;
 int rx_Y = 0;
 int rx_Turn = 0;
 int read_num;
-const int Motor_Max_Power = 22500;
-uint8_t power;
+const int Max_Motor_Power = 22500;
+uint8_t Motor_adj;
 int R_adj; // 旋回の補正値
 
 int main(){
@@ -15,8 +15,8 @@ int main(){
     CANMessage msg;// 変数「msg」の作成
     char buf[64];
     int buf_index = 0;
-    power = Motor_Max_Power / 150; // モーター出力の補正値:150
-    R_adj = Motor_Max_Power / 127; // 旋回の補正値:177
+    Motor_adj = Max_Motor_Power / 150; // モーター出力の補正値:150
+    R_adj = Max_Motor_Power / 127; // 旋回の補正値:177
 
     while(1){
         if(esp.readable()){
@@ -28,6 +28,8 @@ int main(){
                         buf[buf_index] = '\0';
                         buf_index = 0;
                         read_num = atoi(buf);
+
+                        // 値の大きさによってX,Y,旋回量に格納される
                         if (read_num > 383){
                             rx_Turn = (read_num - 512) * R_adj;
                         }
@@ -44,17 +46,21 @@ int main(){
                 }
             }
         }
+
+        // 進む方向の計算
         float rad = 90.0f - (atan2(rx_Y, rx_X) * 180.0f / M_PI);
-        if (rad < 0){
-            rad += 360.0;
-        }
+        if (rad < 0) rad += 360.0;
+        
+        // スピードの計算と調整
         float speed = hypot(rx_X, rx_Y);
         if (abs(rx_X) <= 10 && abs(rx_Y) <= 10) speed = 0;
         if (abs(rx_Turn) <= 10) rx_Turn = 0;
-        pwm[0] = (sin((rad - 45) * M_PI / 180.0f) * speed * power) + rx_Turn;
-        pwm[1] = (sin((rad - 135) * M_PI / 180.0f) * speed * power) + rx_Turn;
-        pwm[2] = (sin((rad - 225) * M_PI / 180.0f) * speed * power) + rx_Turn;
-        pwm[3] = (sin((rad - 315) * M_PI / 180.0f) * speed * power) + rx_Turn;
+
+        // pwmにそれぞれ格納
+        for (int i : pwm){
+            pwm[i] = (int)((sin((rad - (45 + i * 90)) * M_PI / 180.0f) * speed * Motor_adj) + rx_Turn) % (Max_Motor_Power + 1);
+        }
+
         CANMessage msg(2, (const uint8_t *)pwm, 8); //特に理由がない限りwhile直下
         can.write(msg); //特に理由がない限りwhile直下
         
