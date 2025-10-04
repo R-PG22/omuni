@@ -11,19 +11,18 @@ int rx_X = 0;
 int rx_Y = 0;
 int read_num;
 int c_int;
-int Turn = 0;
 int is_turn = 0;
 
-
+// 機構のモーター出力の設定
 std::map<int, int> pwm_datas = {
-    {107, 5000}, // r_up
-    {108, 20000}, // r_
-    {109, 10000},
-    {110, 20000},
-    {111, -20000}, // r_down
-    {112, -20000},
-    {113, -10000},
-    {114, -20000}
+    {107, 5000}, // ラッピ二を上げる
+    {108, 20000}, // ラッピニを動かす（閉じる）
+    {109, 10000}, // 回収機構を上げる
+    {110, 20000}, // 回収する
+    {111, -20000}, // ラッピ二を下げる
+    {112, -20000}, // ラッピニを動かす（開ける）
+    {113, -10000}, // 回収機構を下げる
+    {114, -20000} // 放出する
 };
  
 int main(){
@@ -38,16 +37,14 @@ int main(){
         if(esp.readable()){
             char c;
             int len = esp.read(&c, 1);
-            // printf("%c",c);
             if (len > 0){
                 if (c == '\n'){
-                    // printf("%s",buf);
                     if(buf_index > 0){
                         buf[buf_index] = '\0';
                         buf_index = 0;
                         read_num = atoi(buf);
-                        // printf("%d",read_num);
 
+                        // 特定の値が来たら旋回
                         if (read_num == 1001){
                             is_turn = 1;
                         }else if (read_num == 1000){
@@ -56,17 +53,16 @@ int main(){
                             is_turn = 0;
                         }
 
-                        // 値の大きさによってX,Y,旋回量に格納される
-                        if (400 > read_num && read_num > 127){
+                        // 値の大きさによってX,Yに格納される
+                        if (384 > read_num && read_num > 127){
                             rx_Y = read_num - 256;
-                            // printf("y");
                         }else if(128 > read_num && read_num > -128){
                             rx_X = read_num;
-                            // printf("x");
                         }
                     }
                 }else if (isalpha(c)){
                     // オムニ以外のモーターの出力
+                    // charを数値として扱いモーター出力の番号にする
                     c_int = (int)c;
                     other[(c_int - 107) % 4] = pwm_datas[c_int];
                 }else{
@@ -91,7 +87,8 @@ int main(){
         float speed = hypot(rx_X, rx_Y);
         if (abs(rx_X) <= 10 && abs(rx_Y) <= 10) speed = 0;
 
-        // pwmにそれぞれ格納
+        // pwmに計算してそれぞれ格納
+        // もしくは旋回
         if (is_turn == 0){
             for (int i = 0; i < 4; i++){
                 wheel[i] = min((int)((sin((rad - (45 + i * 90)) * M_PI / 180.0f) * speed * Motor_adj)), Max_Motor_Power);
@@ -106,12 +103,6 @@ int main(){
         CANMessage msg2(4, (const uint8_t *)other, 8); //特に理由がない限りwhile直下
         can.write(msg); //特に理由がない限りwhile直下
         can.write(msg2); //特に理由がない限りwhile直下
-        
-        printf("%d %d\n", wheel[3],wheel[0]);
-        printf("%d %d\n", wheel[2],wheel[1]);
-        // printf("%d,%d",rx_X,rx_Y);
-        
-        printf("\n");
     }
     return 0;
 }
