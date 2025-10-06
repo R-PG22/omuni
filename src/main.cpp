@@ -6,7 +6,6 @@ int16_t wheel[4] = {0, 0, 0, 0};
 int16_t other[4] = {0, 0, 0, 0};
 constexpr int Max_Motor_Power = 20000;
 constexpr int Motor_adj = Max_Motor_Power / 150; // 出力の補正値:150
-constexpr int R_adj = Max_Motor_Power / 127; // 旋回の補正値:177
 int rx_X = 0;
 int rx_Y = 0;
 int read_num;
@@ -95,7 +94,7 @@ int main(){
             }
         }else {
             for (int i = 0; i < 4; i++){
-                wheel[i] = 20000 * is_turn;
+                wheel[i] = Max_Motor_Power * is_turn;
             }
         }
 
